@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebApi.Data;
-using WebApi.Mappers;
+using Api.Data;
+using Api.Dtos.Note;
+using Api.Mappers;
 
-namespace WebApi.Controllers;
+namespace Api.Controllers;
 
 [Route("api/note")]
 public class NoteController : ControllerBase
@@ -23,15 +24,46 @@ public class NoteController : ControllerBase
         return Ok(notes);
     }
 
-    [HttpGet("{id}")]
-    public IActionResult GetById([FromRoute] Guid id)
+    [HttpPost]
+    public IActionResult Create([FromBody] CreateNoteRequestDto noteDto)
     {
-        var note = _context.Notes.Find(id);
+        var noteModel = noteDto.ToNoteFromCreateDto();
 
-        if (note == null)
+        _context.Add(noteModel);
+        _context.SaveChanges();
+
+        return Ok(noteModel.ToNoteDto());
+    }
+
+    [HttpPut]
+    [Route("{id}")]
+    public IActionResult Update([FromRoute] Guid id, [FromBody] UpdateNoteRequestDto noteDto)
+    {
+        var noteModel = _context.Notes.FirstOrDefault(n => n.Id == id);
+
+        if (noteModel == null)
             return NotFound();
 
+        noteModel.Title = noteDto.Title;
+        noteModel.Content = noteDto.Content;
+        
+        _context.SaveChanges();
 
-        return Ok(note.ToNoteDto());
+        return NoContent();
+    }
+
+    [HttpDelete]
+    [Route("{id}")]
+    public IActionResult Delete([FromRoute] Guid id)
+    {
+        var noteModel = _context.Notes.FirstOrDefault(n => n.Id == id);
+
+        if (noteModel == null)
+            return NotFound();
+
+        _context.Notes.Remove(noteModel);
+        _context.SaveChanges();
+
+        return NoContent();
     }
 }

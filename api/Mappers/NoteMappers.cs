@@ -1,7 +1,7 @@
-﻿using WebApi.Dtos.Note;
-using WebApi.Models;
+﻿using Api.Dtos.Note;
+using Api.Shared.Models;
 
-namespace WebApi.Mappers;
+namespace Api.Mappers;
 
 public static class NoteMappers
 {
@@ -12,9 +12,16 @@ public static class NoteMappers
             Id = noteModel.Id,
             Title = noteModel.Title,
             Content = noteModel.Content,
-            CreatedOn = noteModel.CreatedOn,
-            EditedOn = noteModel.EditedOn,
-            UserId = noteModel.UserId
+            CreatedOn = noteModel.CreatedOn
+        };
+    }
+
+    public static Note ToNoteFromCreateDto(this CreateNoteRequestDto noteDto)
+    {
+        return new Note
+        {         
+            Title = noteDto.Title,
+            Content = noteDto.Content
         };
     }
 }

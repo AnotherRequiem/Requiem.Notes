@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebApi.Data;
+using WebApi.Mappers;
 
 namespace WebApi.Controllers;
 
@@ -16,7 +17,8 @@ public class NoteController : ControllerBase
     [HttpGet]
     public IActionResult GetAll()
     {
-        var notes = _context.Notes.ToList();
+        var notes = _context.Notes.ToList()
+            .Select(n => n.ToNoteDto());
 
         return Ok(notes);
     }
@@ -30,6 +32,6 @@ public class NoteController : ControllerBase
             return NotFound();
 
 
-        return Ok(note);
+        return Ok(note.ToNoteDto());
     }
 }

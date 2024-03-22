@@ -19,7 +19,7 @@ public class NoteController : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
-    {
+    {      
         var notes = await _noteRepository.GetAllAsync();
 
         var noteDto = notes.Select(n => n.ToNoteDto());
@@ -30,6 +30,9 @@ public class NoteController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateNoteRequestDto noteDto)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var noteModel = noteDto.ToNoteFromCreateDto();
 
         await _noteRepository.CreateAsync(noteModel);      
@@ -38,9 +41,12 @@ public class NoteController : ControllerBase
     }
 
     [HttpPut]
-    [Route("{id}")]
+    [Route("{id:guid}")]
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateNoteRequestDto noteDto)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var noteModel = await _noteRepository.UpdateAsync(id, noteDto);
 
         if (noteModel == null)
@@ -50,7 +56,7 @@ public class NoteController : ControllerBase
     }
 
     [HttpDelete]
-    [Route("{id}")]
+    [Route("{id:guid}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         var noteModel = await _noteRepository.DeleteAsync(id);

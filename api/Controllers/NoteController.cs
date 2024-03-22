@@ -3,23 +3,24 @@ using Api.Data;
 using Api.Dtos.Note;
 using Api.Mappers;
 using Microsoft.EntityFrameworkCore;
+using Api.Interfaces;
 
 namespace Api.Controllers;
 
 [Route("api/note")]
 public class NoteController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly INoteRepository _noteRepository;
 
-    public NoteController(ApplicationDbContext context)
+    public NoteController(INoteRepository noteRepository )
     {
-        _context = context;
+        _noteRepository = noteRepository;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var notes = await _context.Notes.ToListAsync();
+        var notes = await _noteRepository.GetAllAsync();
 
         var noteDto = notes.Select(n => n.ToNoteDto());
 
@@ -31,8 +32,7 @@ public class NoteController : ControllerBase
     {
         var noteModel = noteDto.ToNoteFromCreateDto();
 
-        await _context.AddAsync(noteModel);
-        await _context.SaveChangesAsync();
+        await _noteRepository.CreateAsync(noteModel);      
 
         return Ok(noteModel.ToNoteDto());
     }
@@ -41,30 +41,22 @@ public class NoteController : ControllerBase
     [Route("{id}")]
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateNoteRequestDto noteDto)
     {
-        var noteModel = await _context.Notes.FirstOrDefaultAsync(n => n.Id == id);
+        var noteModel = await _noteRepository.UpdateAsync(id, noteDto);
 
         if (noteModel == null)
             return NotFound();
 
-        noteModel.Title = noteDto.Title;
-        noteModel.Content = noteDto.Content;
-        
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        return Ok(noteModel.ToNoteDto());
     }
 
     [HttpDelete]
     [Route("{id}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        var noteModel = await _context.Notes.FirstOrDefaultAsync(n => n.Id == id);
+        var noteModel = await _noteRepository.DeleteAsync(id);
 
         if (noteModel == null)
             return NotFound();
-
-        _context.Notes.Remove(noteModel);
-        await _context.SaveChangesAsync();
 
         return NoContent();
     }

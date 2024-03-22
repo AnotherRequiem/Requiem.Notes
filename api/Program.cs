@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Api.Data;
+using Api.Interfaces;
+using Api.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<INoteRepository, NoteRepository>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
